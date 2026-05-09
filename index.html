@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tommy Board</title>
+    <style>
+        :root {
+            --indigo: #6366f1;
+            --indigo-light: #e0e7ff;
+            --indigo-dark: #4f46e5;
+            --bg: #f9fafb;
+            --card: #ffffff;
+            --text: #111827;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ── Header ── */
+        header {
+            background: white;
+            border-bottom: 1px solid var(--border);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--indigo);
+            letter-spacing: -0.3px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sync-status {
+            font-size: 12px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .sync-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #10b981;
+            flex-shrink: 0;
+        }
+        .sync-dot.syncing { background: #f59e0b; animation: pulse 1s infinite; }
+        .sync-dot.error   { background: #ef4444; }
+        .sync-dot.local   { background: var(--text-muted); }
+
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+        .btn-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            transition: background .15s;
+        }
+        .btn-icon:hover { background: var(--bg); }
+
+        /* ── Main ── */
+        main {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 28px 20px;
+        }
+
+        /* ── Section ── */
+        .section { margin-bottom: 36px; }
+
+        .section-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: .07em;
+            margin-bottom: 14px;
+        }
+
+        /* ── Project Grid ── */
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+            gap: 14px;
+        }
+
+        /* ── Project Card ── */
+        .project-card {
+            background: white;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            padding: 20px;
+            cursor: pointer;
+            transition: box-shadow .2s, transform .15s;
+            min-height: 110px;
+        }
+        .project-card:hover {
+            box-shadow: 0 4px 20px rgba(99,102,241,.13);
+            transform: translateY(-2px);
+        }
+
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 14px;
+        }
+
+        .project-name {
+            font-size: 15px;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        .status-badge {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 9px;
+            border-radius: 20px;
+            white-space: nowrap;
+            margin-left: 8px;
+            flex-shrink: 0;
+        }
+        .badge-진행중 { background: #e0e7ff; color: #4338ca; }
+        .badge-완료   { background: #d1fae5; color: #065f46; }
+        .badge-보류   { background: #fef3c7; color: #92400e; }
+
+        .card-milestones { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+
+        .milestone-row-card {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .ms-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--indigo);
+            flex-shrink: 0;
+        }
+        .ms-dot.done { background: #10b981; }
+
+        .ms-title {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .ms-date { flex-shrink: 0; font-size: 11px; }
+
+        .card-nexttasks { display: flex; flex-direction: column; gap: 3px; }
+
+        .nexttask-row-card {
+            font-size: 12px;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* ── Add Card ── */
+        .add-card {
+            background: white;
+            border-radius: 14px;
+            border: 2px dashed var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--text-muted);
+            gap: 6px;
+            min-height: 110px;
+            transition: border-color .2s, color .2s;
+        }
+        .add-card:hover { border-color: var(--indigo); color: var(--indigo); }
+
+        /* ── Todo ── */
+        .todo-card {
+            background: white;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .todo-input-row {
+            display: flex;
+            gap: 10px;
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .todo-input {
+            flex: 1;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 9px 13px;
+            font-size: 14px;
+            outline: none;
+            font-family: inherit;
+            color: var(--text);
+        }
+        .todo-input:focus { border-color: var(--indigo); }
+
+        .btn-primary {
+            background: var(--indigo);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 9px 18px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+        .btn-primary:hover { background: var(--indigo-dark); }
+
+        .todo-items { padding: 4px 0; }
+
+        .todo-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        .todo-item:last-child { border-bottom: none; }
+
+        .todo-check {
+            width: 18px; height: 18px;
+            border-radius: 5px;
+            border: 2px solid var(--border);
+            cursor: pointer;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all .15s;
+            font-size: 11px;
+            color: white;
+        }
+        .todo-check.checked { background: var(--indigo); border-color: var(--indigo); }
+
+        .todo-text { flex: 1; font-size: 14px; line-height: 1.4; }
+        .todo-text.done { text-decoration: line-through; color: var(--text-muted); }
+
+        .todo-del {
+            color: var(--border);
+            cursor: pointer;
+            font-size: 14px;
+            padding: 4px 6px;
+            border-radius: 4px;
+            line-height: 1;
+        }
+        .todo-del:hover { color: #ef4444; background: #fef2f2; }
+
+        .todo-empty {
+            padding: 36px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        /* ── Modal ── */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.45);
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 620px;
+            max-height: 92vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,.2);
+        }
+
+        .modal-head {
+            padding: 20px 24px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 10;
+        }
+
+        .modal-title { font-size: 17px; font-weight: 700; }
+
+        .modal-head-actions { display: flex; gap: 6px; align-items: center; }
+
+        .btn-close {
+            width: 30px; height: 30px;
+            border-radius: 7px;
+            border: 1px solid var(--border);
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-close:hover { background: var(--bg); }
+
+        .modal-body { padding: 24px; }
+
+        /* ── Detail Sections ── */
+        .detail-status-row { display: flex; align-items: center; gap: 10px; margin-bottom: 26px; }
+
+        .status-select {
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 1.5px solid var(--border);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            outline: none;
+            font-family: inherit;
+            background: white;
+        }
+        .status-select:focus { border-color: var(--indigo); }
+
+        .detail-sec { margin-bottom: 28px; }
+
+        .detail-sec-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: .07em;
+            margin-bottom: 10px;
+        }
+
+        /* Milestone rows in detail */
+        .ms-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .ms-check-box {
+            width: 18px; height: 18px;
+            border-radius: 5px;
+            border: 2px solid var(--border);
+            cursor: pointer;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            color: white;
+        }
+        .ms-check-box.done { background: #10b981; border-color: #10b981; }
+
+        .input-sm {
+            flex: 1;
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            padding: 7px 10px;
+            font-size: 13px;
+            outline: none;
+            font-family: inherit;
+            color: var(--text);
+        }
+        .input-sm:focus { border-color: var(--indigo); }
+
+        .input-date {
+            width: 138px;
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            padding: 7px 10px;
+            font-size: 13px;
+            outline: none;
+            font-family: inherit;
+            flex-shrink: 0;
+            color: var(--text);
+        }
+        .input-date:focus { border-color: var(--indigo); }
+
+        .btn-x {
+            background: none;
+            border: none;
+            color: var(--border);
+            cursor: pointer;
+            font-size: 15px;
+            padding: 4px;
+            border-radius: 4px;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+        .btn-x:hover { color: #ef4444; background: #fef2f2; }
+
+        /* Task rows */
+        .task-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .btn-add-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border: 1.5px dashed var(--border);
+            border-radius: 7px;
+            background: none;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            font-family: inherit;
+        }
+        .btn-add-row:hover { border-color: var(--indigo); color: var(--indigo); }
+
+        /* Notes */
+        .notes-area {
+            width: 100%;
+            min-height: 160px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 14px;
+            outline: none;
+            resize: vertical;
+            font-family: inherit;
+            line-height: 1.65;
+            color: var(--text);
+        }
+        .notes-area:focus { border-color: var(--indigo); }
+
+        /* Save / Delete */
+        .btn-save {
+            width: 100%;
+            background: var(--indigo);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 13px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            margin-top: 4px;
+        }
+        .btn-save:hover { background: var(--indigo-dark); }
+
+        .btn-danger {
+            background: none;
+            border: 1px solid #fca5a5;
+            color: #ef4444;
+            border-radius: 8px;
+            padding: 7px 14px;
+            font-size: 13px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .btn-danger:hover { background: #fef2f2; }
+
+        /* ── Form (Add Project) ── */
+        .form-field { margin-bottom: 16px; }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 13px;
+            font-size: 14px;
+            outline: none;
+            font-family: inherit;
+            background: white;
+            color: var(--text);
+        }
+        .form-input:focus, .form-select:focus { border-color: var(--indigo); }
+
+        /* ── Settings ── */
+        .settings-field { margin-bottom: 20px; }
+
+        .settings-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .settings-input {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 13px;
+            font-size: 14px;
+            outline: none;
+            font-family: inherit;
+            color: var(--text);
+        }
+        .settings-input:focus { border-color: var(--indigo); }
+
+        .settings-hint {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 5px;
+            line-height: 1.5;
+        }
+
+        .settings-hint a { color: var(--indigo); }
+
+        .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+        .btn-secondary {
+            width: 100%;
+            background: none;
+            border: 1.5px solid var(--border);
+            color: var(--text);
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .btn-secondary:hover { border-color: var(--indigo); color: var(--indigo); }
+
+        /* ── Toast ── */
+        .toast {
+            position: fixed;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #111827;
+            color: white;
+            padding: 10px 22px;
+            border-radius: 10px;
+            font-size: 14px;
+            z-index: 999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .25s;
+            white-space: nowrap;
+        }
+        .toast.show { opacity: 1; }
+
+        /* ── Responsive ── */
+        @media (max-width: 600px) {
+            header { padding: 13px 16px; }
+            main { padding: 20px 12px; }
+            .project-grid { grid-template-columns: 1fr; }
+            .overlay { align-items: flex-end; padding: 0; }
+            .modal { border-radius: 20px 20px 0 0; max-height: 95vh; }
+            .input-date { width: 118px; }
+            .sync-status span { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header>
+    <div class="logo">Tommy Board</div>
+    <div class="header-right">
+        <div class="sync-status">
+            <div class="sync-dot" id="syncDot"></div>
+            <span id="syncText">저장됨</span>
+        </div>
+        <button class="btn-icon" onclick="openSettings()" title="설정">⚙️</button>
+    </div>
+</header>
+
+<!-- ── Main ── -->
+<main>
+    <div class="section">
+        <div class="section-title">🏢 회사 프로젝트</div>
+        <div class="project-grid" id="companyGrid"></div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">👤 개인 프로젝트</div>
+        <div class="project-grid" id="personalGrid"></div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">✅ Todo</div>
+        <div class="todo-card">
+            <div class="todo-input-row">
+                <input
+                    type="text"
+                    class="todo-input"
+                    id="todoInput"
+                    placeholder="할 일 추가..."
+                    onkeydown="if(event.key==='Enter') addTodo()"
+                >
+                <button class="btn-primary" onclick="addTodo()">추가</button>
+            </div>
+            <div class="todo-items" id="todoList"></div>
+        </div>
+    </div>
+</main>
+
+<!-- ── Detail Modal ── -->
+<div class="overlay" id="detailModal" style="display:none" onclick="if(event.target===this)closeDetail()">
+    <div class="modal">
+        <div class="modal-head">
+            <div class="modal-title" id="detailTitle"></div>
+            <div class="modal-head-actions">
+                <button class="btn-danger" onclick="deleteProject()">삭제</button>
+                <button class="btn-close" onclick="closeDetail()">✕</button>
+            </div>
+        </div>
+        <div class="modal-body" id="detailBody"></div>
+    </div>
+</div>
+
+<!-- ── Add Project Modal ── -->
+<div class="overlay" id="addModal" style="display:none" onclick="if(event.target===this)closeAdd()">
+    <div class="modal">
+        <div class="modal-head">
+            <div class="modal-title">프로젝트 추가</div>
+            <button class="btn-close" onclick="closeAdd()">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-field">
+                <label class="form-label">프로젝트 이름</label>
+                <input type="text" class="form-input" id="newName" placeholder="이름을 입력하세요">
+            </div>
+            <div class="form-field">
+                <label class="form-label">분류</label>
+                <select class="form-select" id="newType">
+                    <option value="company">🏢 회사</option>
+                    <option value="personal">👤 개인</option>
+                </select>
+            </div>
+            <div class="form-field">
+                <label class="form-label">상태</label>
+                <select class="form-select" id="newStatus">
+                    <option value="진행중">진행중</option>
+                    <option value="보류">보류</option>
+                    <option value="완료">완료</option>
+                </select>
+            </div>
+            <button class="btn-save" onclick="confirmAdd()">추가하기</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Settings Modal ── -->
+<div class="overlay" id="settingsModal" style="display:none" onclick="if(event.target===this)closeSettings()">
+    <div class="modal">
+        <div class="modal-head">
+            <div class="modal-title">⚙️ 설정</div>
+            <button class="btn-close" onclick="closeSettings()">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="settings-field">
+                <label class="settings-label">GitHub Personal Access Token</label>
+                <input type="password" class="settings-input" id="cfgToken" placeholder="ghp_xxxxxxxxxxxx">
+                <p class="settings-hint">
+                    GitHub → Settings → Developer settings → Personal access tokens (classic)<br>
+                    → <strong>gist</strong> 권한만 체크해서 발급
+                </p>
+            </div>
+            <div class="settings-field">
+                <label class="settings-label">Gist ID</label>
+                <input type="text" class="settings-input" id="cfgGistId" placeholder="abc123def456...">
+                <p class="settings-hint">
+                    <a href="https://gist.github.com" target="_blank">gist.github.com</a>에서
+                    파일명 <strong>data.json</strong>, 내용 <strong>{}</strong> 으로 Secret Gist 생성 후<br>
+                    URL 끝의 ID를 붙여넣기 (예: gist.github.com/junetommin-prog/<strong>여기가ID</strong>)
+                </p>
+            </div>
+            <button class="btn-save" onclick="saveSettings()">저장하고 연결</button>
+            <hr class="divider">
+            <button class="btn-secondary" onclick="testConn()">연결 테스트</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Toast ── -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════
+//  DEFAULT DATA
+// ══════════════════════════════════════════════════
+const DEFAULTS = {
+    projects: [],
+    todos: []
+};
+
+// ══════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════
+let state = JSON.parse(JSON.stringify(DEFAULTS));
+let openProjectId = null;
+let saveTimer = null;
+
+// ══════════════════════════════════════════════════
+//  CONFIG (localStorage)
+// ══════════════════════════════════════════════════
+const cfg = {
+    get token()  { return localStorage.getItem('tb_token')   || ''; },
+    get gistId() { return localStorage.getItem('tb_gist_id') || ''; },
+    set(token, gistId) {
+        localStorage.setItem('tb_token',   token);
+        localStorage.setItem('tb_gist_id', gistId);
+    }
+};
+
+// ══════════════════════════════════════════════════
+//  GIST API
+// ══════════════════════════════════════════════════
+async function loadFromGist() {
+    if (!cfg.token || !cfg.gistId) { setSyncStatus('local', '로컬 모드'); loadLocal(); return; }
+    setSyncStatus('syncing', '불러오는 중...');
+    try {
+        const res = await fetch(`https://api.github.com/gists/${cfg.gistId}`, {
+            headers: { Authorization: `Bearer ${cfg.token}`, Accept: 'application/vnd.github+json' }
+        });
+        if (!res.ok) throw new Error(res.status);
+        const gist = await res.json();
+        const raw  = gist.files['data.json']?.content;
+        if (raw) state = JSON.parse(raw);
+        setSyncStatus('ok', '저장됨');
+        render();
+    } catch (e) {
+        setSyncStatus('error', '연결 오류');
+        loadLocal();
+    }
+}
+
+async function saveToGist() {
+    saveLocal();
+    if (!cfg.token || !cfg.gistId) return;
+    setSyncStatus('syncing', '저장 중...');
+    try {
+        const res = await fetch(`https://api.github.com/gists/${cfg.gistId}`, {
+            method: 'PATCH',
+            headers: {
+                Authorization: `Bearer ${cfg.token}`,
+                Accept: 'application/vnd.github+json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ files: { 'data.json': { content: JSON.stringify(state, null, 2) } } })
+        });
+        setSyncStatus(res.ok ? 'ok' : 'error', res.ok ? '저장됨' : '저장 실패');
+    } catch { setSyncStatus('error', '저장 실패'); }
+}
+
+function saveLocal()  { localStorage.setItem('tb_data', JSON.stringify(state)); }
+function loadLocal()  { const d = localStorage.getItem('tb_data'); if (d) state = JSON.parse(d); render(); }
+
+function queueSave() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveToGist, 1500);
+}
+
+function setSyncStatus(type, text) {
+    document.getElementById('syncDot').className = 'sync-dot' + (type === 'ok' ? '' : ' ' + type);
+    document.getElementById('syncText').textContent = text;
+}
+
+// ══════════════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════════════
+function render() {
+    renderGrid('company',  document.getElementById('companyGrid'));
+    renderGrid('personal', document.getElementById('personalGrid'));
+    renderTodos();
+}
+
+function renderGrid(type, el) {
+    const projects = state.projects.filter(p => p.type === type);
+    el.innerHTML = projects.map(cardHtml).join('') + `
+        <div class="add-card" onclick="openAdd('${type}')">
+            <span style="font-size:18px">+</span> 프로젝트 추가
+        </div>`;
+}
+
+function cardHtml(p) {
+    const ms = (p.milestones || []).slice(0, 3).map(m => `
+        <div class="milestone-row-card">
+            <div class="ms-dot ${m.done ? 'done' : ''}"></div>
+            <span class="ms-title">${esc(m.title)}</span>
+            <span class="ms-date">${m.date || ''}</span>
+        </div>`).join('');
+
+    const nt = (p.nextTasks || []).slice(0, 2).map(t =>
+        `<div class="nexttask-row-card">→ ${esc(t)}</div>`).join('');
+
+    return `
+        <div class="project-card" onclick="openDetail('${p.id}')">
+            <div class="card-top">
+                <div class="project-name">${esc(p.name)}</div>
+                <span class="status-badge badge-${p.status}">${p.status}</span>
+            </div>
+            ${ms ? `<div class="card-milestones">${ms}</div>` : ''}
+            ${nt ? `<div class="card-nexttasks">${nt}</div>` : ''}
+        </div>`;
+}
+
+// ══════════════════════════════════════════════════
+//  TODO
+// ══════════════════════════════════════════════════
+function renderTodos() {
+    const el = document.getElementById('todoList');
+    if (!state.todos.length) { el.innerHTML = '<div class="todo-empty">할 일이 없어요 🎉</div>'; return; }
+    el.innerHTML = state.todos.map((t, i) => `
+        <div class="todo-item">
+            <div class="todo-check ${t.done ? 'checked' : ''}" onclick="toggleTodo(${i})">${t.done ? '✓' : ''}</div>
+            <span class="todo-text ${t.done ? 'done' : ''}">${esc(t.text)}</span>
+            <span class="todo-del" onclick="deleteTodo(${i})">✕</span>
+        </div>`).join('');
+}
+
+function addTodo() {
+    const inp = document.getElementById('todoInput');
+    const txt = inp.value.trim();
+    if (!txt) return;
+    state.todos.push({ text: txt, done: false });
+    inp.value = '';
+    renderTodos();
+    queueSave();
+}
+
+function toggleTodo(i) { state.todos[i].done = !state.todos[i].done; renderTodos(); queueSave(); }
+function deleteTodo(i)  { state.todos.splice(i, 1); renderTodos(); queueSave(); }
+
+// ══════════════════════════════════════════════════
+//  PROJECT DETAIL
+// ══════════════════════════════════════════════════
+function openDetail(id) {
+    openProjectId = id;
+    const p = proj();
+    document.getElementById('detailTitle').textContent = p.name;
+    document.getElementById('detailBody').innerHTML = detailBodyHtml(p);
+    document.getElementById('detailModal').style.display = 'flex';
+}
+
+function detailBodyHtml(p) {
+    const statusOpts = ['진행중','완료','보류'].map(s =>
+        `<option value="${s}" ${p.status === s ? 'selected' : ''}>${s}</option>`).join('');
+
+    const msHtml = (p.milestones || []).map((m, i) => msRowHtml(m, i)).join('');
+    const ntHtml = (p.nextTasks  || []).map((t, i) => ntRowHtml(t, i)).join('');
+
+    return `
+        <div class="detail-status-row">
+            <select class="status-select" onchange="proj().status=this.value">${statusOpts}</select>
+        </div>
+
+        <div class="detail-sec">
+            <div class="detail-sec-title">마일스톤</div>
+            <div id="msList">${msHtml}</div>
+            <button class="btn-add-row" onclick="addMs()">+ 마일스톤 추가</button>
+        </div>
+
+        <div class="detail-sec">
+            <div class="detail-sec-title">다음 할 일</div>
+            <div id="ntList">${ntHtml}</div>
+            <button class="btn-add-row" onclick="addNt()">+ 할 일 추가</button>
+        </div>
+
+        <div class="detail-sec">
+            <div class="detail-sec-title">메모</div>
+            <textarea class="notes-area" id="notesArea"
+                placeholder="자유롭게 메모하세요..."
+                oninput="proj().notes=this.value">${esc(p.notes || '')}</textarea>
+        </div>
+
+        <button class="btn-save" onclick="saveDetail()">저장</button>`;
+}
+
+function msRowHtml(m, i) {
+    return `
+        <div class="ms-row" id="ms-${i}">
+            <div class="ms-check-box ${m.done ? 'done' : ''}" onclick="toggleMs(${i})">${m.done ? '✓' : ''}</div>
+            <input class="input-sm"   type="text" value="${esc(m.title)}" placeholder="마일스톤 이름"
+                oninput="proj().milestones[${i}].title=this.value">
+            <input class="input-date" type="date" value="${m.date || ''}"
+                oninput="proj().milestones[${i}].date=this.value">
+            <button class="btn-x" onclick="removeMs(${i})">✕</button>
+        </div>`;
+}
+
+function ntRowHtml(t, i) {
+    return `
+        <div class="task-row" id="nt-${i}">
+            <input class="input-sm" type="text" value="${esc(t)}" placeholder="다음 할 일"
+                oninput="proj().nextTasks[${i}]=this.value">
+            <button class="btn-x" onclick="removeNt(${i})">✕</button>
+        </div>`;
+}
+
+function redrawMs() { document.getElementById('msList').innerHTML = (proj().milestones||[]).map(msRowHtml).join(''); }
+function redrawNt() { document.getElementById('ntList').innerHTML = (proj().nextTasks ||[]).map(ntRowHtml).join(''); }
+
+function toggleMs(i) {
+    const m = proj().milestones[i];
+    m.done = !m.done;
+    const el = document.querySelector(`#ms-${i} .ms-check-box`);
+    el.className = 'ms-check-box' + (m.done ? ' done' : '');
+    el.textContent = m.done ? '✓' : '';
+}
+
+function addMs()      { (proj().milestones = proj().milestones||[]).push({title:'',date:'',done:false}); redrawMs(); }
+function removeMs(i)  { proj().milestones.splice(i,1); redrawMs(); }
+function addNt()      { (proj().nextTasks  = proj().nextTasks ||[]).push(''); redrawNt(); }
+function removeNt(i)  { proj().nextTasks.splice(i,1); redrawNt(); }
+
+function saveDetail() { queueSave(); showToast('저장했어요 ✓'); closeDetail(); }
+
+function closeDetail() {
+    document.getElementById('detailModal').style.display = 'none';
+    openProjectId = null;
+    render();
+}
+
+function deleteProject() {
+    if (!confirm(`"${proj().name}" 프로젝트를 삭제할까요?`)) return;
+    state.projects = state.projects.filter(p => p.id !== openProjectId);
+    closeDetail();
+    queueSave();
+    showToast('삭제했어요');
+}
+
+function proj() { return state.projects.find(p => p.id === openProjectId); }
+
+// ══════════════════════════════════════════════════
+//  ADD PROJECT
+// ══════════════════════════════════════════════════
+function openAdd(type) {
+    document.getElementById('newType').value = type;
+    document.getElementById('newName').value = '';
+    document.getElementById('newStatus').value = '진행중';
+    document.getElementById('addModal').style.display = 'flex';
+    setTimeout(() => document.getElementById('newName').focus(), 100);
+}
+
+function closeAdd() { document.getElementById('addModal').style.display = 'none'; }
+
+function confirmAdd() {
+    const name   = document.getElementById('newName').value.trim();
+    const type   = document.getElementById('newType').value;
+    const status = document.getElementById('newStatus').value;
+    if (!name) { showToast('이름을 입력해주세요'); return; }
+    state.projects.push({ id: Date.now().toString(), name, type, status, milestones: [], nextTasks: [], notes: '' });
+    closeAdd();
+    render();
+    queueSave();
+    showToast('프로젝트를 추가했어요 ✓');
+}
+
+// ══════════════════════════════════════════════════
+//  SETTINGS
+// ══════════════════════════════════════════════════
+function openSettings() {
+    document.getElementById('cfgToken').value  = cfg.token;
+    document.getElementById('cfgGistId').value = cfg.gistId;
+    document.getElementById('settingsModal').style.display = 'flex';
+}
+
+function closeSettings() { document.getElementById('settingsModal').style.display = 'none'; }
+
+function saveSettings() {
+    cfg.set(
+        document.getElementById('cfgToken').value.trim(),
+        document.getElementById('cfgGistId').value.trim()
+    );
+    closeSettings();
+    showToast('설정 저장 — 데이터를 불러오는 중...');
+    loadFromGist();
+}
+
+async function testConn() {
+    if (!cfg.token || !cfg.gistId) { showToast('토큰과 Gist ID를 먼저 입력해주세요'); return; }
+    showToast('테스트 중...');
+    try {
+        const res = await fetch(`https://api.github.com/gists/${cfg.gistId}`, {
+            headers: { Authorization: `Bearer ${cfg.token}` }
+        });
+        showToast(res.ok ? '✓ 연결 성공!' : `연결 실패 (${res.status})`);
+    } catch { showToast('연결 실패 — 네트워크 확인'); }
+}
+
+// ══════════════════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════════════════
+function esc(s) {
+    return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+// ══════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════
+loadFromGist();
+</script>
+</body>
+</html>

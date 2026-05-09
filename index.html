@@ -769,7 +769,10 @@ async function loadFromGist() {
         if (!res.ok) throw new Error(res.status);
         const gist = await res.json();
         const raw  = gist.files['data.json']?.content;
-        if (raw) state = JSON.parse(raw);
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            state = { projects: parsed.projects || [], todos: parsed.todos || [] };
+        }
         setSyncStatus('ok', '저장됨');
         render();
     } catch (e) {
